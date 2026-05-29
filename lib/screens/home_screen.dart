@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../models/drainage_report.dart';
+import '../services/supabase_service.dart';
 import 'login_screen.dart';
 import 'my_reports_screen.dart';
 import 'notifications_screen.dart';
@@ -10,8 +12,7 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final size = MediaQuery.of(context).size;
+    final residentName = SupabaseService.residentName;
 
     return Scaffold(
       backgroundColor: const Color(0xFF38B6FF), // Blue top background
@@ -21,7 +22,10 @@ class HomeScreen extends StatelessWidget {
           children: [
             // Blue Header Profile Section
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24.0,
+                vertical: 20.0,
+              ),
               child: Row(
                 children: [
                   // Profile Avatar
@@ -45,7 +49,7 @@ class HomeScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Hello, Marites Quireda!',
+                          'Hello, $residentName!',
                           style: GoogleFonts.poppins(
                             color: Colors.black,
                             fontWeight: FontWeight.bold,
@@ -56,7 +60,7 @@ class HomeScreen extends StatelessWidget {
                         Text(
                           'Welcome to Drainage Reporting System',
                           style: GoogleFonts.poppins(
-                            color: Colors.black.withOpacity(0.8),
+                            color: Colors.black.withValues(alpha: 0.8),
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
                           ),
@@ -112,7 +116,10 @@ class HomeScreen extends StatelessWidget {
                             onTap: () {
                               Navigator.push(
                                 context,
-                                MaterialPageRoute(builder: (context) => const ReportIssueScreen()),
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      const ReportIssueScreen(),
+                                ),
                               );
                             },
                           ),
@@ -123,7 +130,9 @@ class HomeScreen extends StatelessWidget {
                             onTap: () {
                               Navigator.push(
                                 context,
-                                MaterialPageRoute(builder: (context) => const MyReportsScreen()),
+                                MaterialPageRoute(
+                                  builder: (context) => const MyReportsScreen(),
+                                ),
                               );
                             },
                           ),
@@ -134,11 +143,14 @@ class HomeScreen extends StatelessWidget {
                             onTap: () {
                               Navigator.push(
                                 context,
-                                MaterialPageRoute(builder: (context) => const NotificationsScreen()),
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      const NotificationsScreen(),
+                                ),
                               );
                             },
                           ),
-                           _buildActionCard(
+                          _buildActionCard(
                             icon: Icons.logout_rounded,
                             iconColor: const Color(0xFFEF4444),
                             title: 'Logout',
@@ -165,7 +177,10 @@ class HomeScreen extends StatelessWidget {
                                         fontSize: 15,
                                       ),
                                     ),
-                                    actionsPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                    actionsPadding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 12,
+                                    ),
                                     actions: [
                                       TextButton(
                                         onPressed: () => Navigator.pop(context),
@@ -178,19 +193,30 @@ class HomeScreen extends StatelessWidget {
                                         ),
                                       ),
                                       ElevatedButton(
-                                        onPressed: () {
-                                          Navigator.pop(context); // Close dialog
+                                        onPressed: () async {
+                                          Navigator.pop(
+                                            context,
+                                          ); // Close dialog
+                                          await SupabaseService.signOut();
+                                          if (!context.mounted) return;
                                           Navigator.pushReplacement(
                                             context,
-                                            MaterialPageRoute(builder: (context) => const LoginScreen()),
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  const LoginScreen(),
+                                            ),
                                           );
                                         },
                                         style: ElevatedButton.styleFrom(
-                                          backgroundColor: const Color(0xFFEF4444),
+                                          backgroundColor: const Color(
+                                            0xFFEF4444,
+                                          ),
                                           foregroundColor: Colors.white,
                                           elevation: 0,
                                           shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(10),
+                                            borderRadius: BorderRadius.circular(
+                                              10,
+                                            ),
                                           ),
                                         ),
                                         child: Text(
@@ -226,7 +252,9 @@ class HomeScreen extends StatelessWidget {
                             onTap: () {
                               Navigator.push(
                                 context,
-                                MaterialPageRoute(builder: (context) => const MyReportsScreen()),
+                                MaterialPageRoute(
+                                  builder: (context) => const MyReportsScreen(),
+                                ),
                               );
                             },
                             child: Text(
@@ -242,98 +270,189 @@ class HomeScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 12),
 
-                      // Recent Report Item Card
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.04),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          children: [
-                            // Image
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(12),
-                              child: Image.asset(
-                                'assets/clogged_drain.png',
-                                width: 70,
-                                height: 70,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  // Fallback if asset load fails
-                                  return Container(
-                                    width: 70,
-                                    height: 70,
-                                    color: Colors.grey[300],
-                                    child: const Icon(Icons.broken_image_outlined, color: Colors.grey),
-                                  );
-                                },
+                      // Recent Report List (Dynamic from Supabase, last 3 reports)
+                      FutureBuilder<List<DrainageReport>>(
+                        future: SupabaseService.fetchMyReports(),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            return const Center(
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(vertical: 24.0),
+                                child: CircularProgressIndicator(
+                                  color: Color(0xFF38B6FF),
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 14),
-                            // Details
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Clogged Drain',
-                                    style: GoogleFonts.poppins(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 15,
-                                      color: Colors.black,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    'May 20, 2026  •  10:30 AM',
-                                    style: GoogleFonts.poppins(
-                                      color: Colors.black54,
-                                      fontSize: 11,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  // Orange badge for status
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFFFFEAD6),
-                                      borderRadius: BorderRadius.circular(20),
-                                    ),
-                                    child: Text(
-                                      'In Progress',
-                                      style: GoogleFonts.poppins(
-                                        color: const Color(0xFFE67E22),
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 10,
-                                      ),
-                                    ),
+                            );
+                          }
+                          if (snapshot.hasError || !snapshot.hasData || snapshot.data!.isEmpty) {
+                            return Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(24),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.04),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 4),
                                   ),
                                 ],
                               ),
-                            ),
-                            const Icon(
-                              Icons.chevron_right_rounded,
-                              color: Colors.black54,
-                              size: 28,
-                            ),
-                          ],
-                        ),
+                              child: Center(
+                                child: Text(
+                                  'No recent reports found.',
+                                  style: GoogleFonts.poppins(
+                                    color: Colors.black54,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            );
+                          }
+
+                          final recentReports = snapshot.data!.take(3).toList();
+
+                          return Column(
+                            children: recentReports.map((report) {
+                              Color badgeBgColor;
+                              Color badgeTextColor;
+
+                              switch (report.status) {
+                                case 'Resolved':
+                                  badgeBgColor = const Color(0xFFE2FBE9);
+                                  badgeTextColor = const Color(0xFF10B981);
+                                  break;
+                                case 'Rejected':
+                                  badgeBgColor = const Color(0xFFFCE8E6);
+                                  badgeTextColor = const Color(0xFFEF4444);
+                                  break;
+                                case 'In Progress':
+                                default:
+                                  badgeBgColor = const Color(0xFFFFEAD6);
+                                  badgeTextColor = const Color(0xFFE67E22);
+                                  break;
+                              }
+
+                              return Container(
+                                margin: const EdgeInsets.only(bottom: 12.0),
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(16),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(alpha: 0.04),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                child: Row(
+                                  children: [
+                                    // Image
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(12),
+                                      child: report.imageUrl.isNotEmpty
+                                          ? Image.network(
+                                              report.imageUrl,
+                                              width: 70,
+                                              height: 70,
+                                              fit: BoxFit.cover,
+                                              errorBuilder: (context, error, stackTrace) {
+                                                return Image.asset(
+                                                  'assets/clogged_drain.png',
+                                                  width: 70,
+                                                  height: 70,
+                                                  fit: BoxFit.cover,
+                                                );
+                                              },
+                                            )
+                                          : Image.asset(
+                                              'assets/clogged_drain.png',
+                                              width: 70,
+                                              height: 70,
+                                              fit: BoxFit.cover,
+                                            ),
+                                    ),
+                                    const SizedBox(width: 14),
+                                    // Details
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            report.issue,
+                                            style: GoogleFonts.poppins(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 15,
+                                              color: Colors.black,
+                                            ),
+                                          ),
+                                          Text(
+                                            report.location,
+                                            style: GoogleFonts.poppins(
+                                              color: Colors.black54,
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            report.formattedDate,
+                                            style: GoogleFonts.poppins(
+                                              color: Colors.black38,
+                                              fontSize: 11,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 6),
+                                          // Badge for status
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 10,
+                                              vertical: 3,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: badgeBgColor,
+                                              borderRadius: BorderRadius.circular(20),
+                                            ),
+                                            child: Text(
+                                              report.status,
+                                              style: GoogleFonts.poppins(
+                                                color: badgeTextColor,
+                                                fontWeight: FontWeight.w600,
+                                                fontSize: 10,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const Icon(
+                                      Icons.chevron_right_rounded,
+                                      color: Colors.black54,
+                                      size: 28,
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }).toList(),
+                          );
+                        },
                       ),
                       const SizedBox(height: 20),
 
                       // Community Tip Banner
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 14,
+                        ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFD6EFFF), // Light blue banner background
+                          color: const Color(
+                            0xFFD6EFFF,
+                          ), // Light blue banner background
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Row(
@@ -382,7 +501,7 @@ class HomeScreen extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: 0.04),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -391,11 +510,7 @@ class HomeScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              icon,
-              size: 40,
-              color: iconColor,
-            ),
+            Icon(icon, size: 40, color: iconColor),
             const SizedBox(height: 10),
             Text(
               title,

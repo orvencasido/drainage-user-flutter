@@ -6,7 +6,8 @@ class NotificationItem {
   final String dateTime;
   final IconData icon;
   final Color iconColor;
-  final bool isCircularIcon; // design detail: circular filled background or plain icon
+  final bool
+  isCircularIcon; // design detail: circular filled background or plain icon
 
   NotificationItem({
     required this.title,
@@ -22,8 +23,6 @@ class NotificationsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     final List<NotificationItem> notifications = [
       NotificationItem(
         title: 'Your report is now In Progress',
@@ -60,7 +59,10 @@ class NotificationsScreen extends StatelessWidget {
           children: [
             // Top Header
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24.0,
+                vertical: 16.0,
+              ),
               child: Row(
                 children: [
                   // Back Button (Black circle with white arrow)
@@ -109,7 +111,12 @@ class NotificationsScreen extends StatelessWidget {
                     Expanded(
                       child: ListView.builder(
                         physics: const BouncingScrollPhysics(),
-                        padding: const EdgeInsets.fromLTRB(20.0, 24.0, 20.0, 10.0),
+                        padding: const EdgeInsets.fromLTRB(
+                          20.0,
+                          24.0,
+                          20.0,
+                          10.0,
+                        ),
                         itemCount: notifications.length,
                         itemBuilder: (context, index) {
                           final item = notifications[index];
@@ -123,7 +130,9 @@ class NotificationsScreen extends StatelessWidget {
                       child: TextButton(
                         onPressed: () {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Viewing all notifications')),
+                            const SnackBar(
+                              content: Text('Viewing all notifications'),
+                            ),
                           );
                         },
                         child: Text(
@@ -155,7 +164,7 @@ class NotificationsScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -210,7 +219,9 @@ class NotificationsScreen extends StatelessWidget {
           shape: BoxShape.circle,
         ),
         child: Icon(
-          item.icon == Icons.check_circle_rounded ? Icons.check_rounded : Icons.priority_high_rounded,
+          item.icon == Icons.check_circle_rounded
+              ? Icons.check_rounded
+              : Icons.priority_high_rounded,
           color: Colors.white,
           size: 24,
         ),
@@ -224,24 +235,20 @@ class NotificationsScreen extends StatelessWidget {
           height: 44,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            border: Border.all(color: item.iconColor.withOpacity(0.5), width: 3, style: BorderStyle.solid),
+            border: Border.all(
+              color: item.iconColor.withValues(alpha: 0.5),
+              width: 3,
+              style: BorderStyle.solid,
+            ),
           ),
-          child: Icon(
-            Icons.check_rounded,
-            color: item.iconColor,
-            size: 24,
-          ),
+          child: Icon(Icons.check_rounded, color: item.iconColor, size: 24),
         );
       }
       return Container(
         width: 44,
         height: 44,
         alignment: Alignment.center,
-        child: Icon(
-          item.icon,
-          color: item.iconColor,
-          size: 38,
-        ),
+        child: Icon(item.icon, color: item.iconColor, size: 38),
       );
     }
   }

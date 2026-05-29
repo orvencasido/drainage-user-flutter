@@ -2,6 +2,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+import '../models/drainage_report.dart';
+import '../services/supabase_service.dart';
 import 'my_reports_screen.dart';
 import 'map_screen.dart';
 
@@ -50,9 +52,10 @@ class _ReportIssueScreenState extends State<ReportIssueScreen> {
         });
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error choosing photo: $e')),
-      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error choosing photo: $e')));
     }
   }
 
@@ -91,12 +94,19 @@ class _ReportIssueScreenState extends State<ReportIssueScreen> {
                         const CircleAvatar(
                           radius: 28,
                           backgroundColor: Color(0xFFE6F4FF),
-                          child: Icon(Icons.camera_alt_rounded, color: Color(0xFF0066FF), size: 28),
+                          child: Icon(
+                            Icons.camera_alt_rounded,
+                            color: Color(0xFF0066FF),
+                            size: 28,
+                          ),
                         ),
                         const SizedBox(height: 8),
                         Text(
                           'Camera',
-                          style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w500),
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ],
                     ),
@@ -111,12 +121,19 @@ class _ReportIssueScreenState extends State<ReportIssueScreen> {
                         const CircleAvatar(
                           radius: 28,
                           backgroundColor: Color(0xFFE2FBE9),
-                          child: Icon(Icons.photo_library_rounded, color: Color(0xFF10B981), size: 28),
+                          child: Icon(
+                            Icons.photo_library_rounded,
+                            color: Color(0xFF10B981),
+                            size: 28,
+                          ),
                         ),
                         const SizedBox(height: 8),
                         Text(
                           'Gallery',
-                          style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w500),
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ],
                     ),
@@ -130,7 +147,7 @@ class _ReportIssueScreenState extends State<ReportIssueScreen> {
     );
   }
 
-  void _showSuccessDialog() {
+  void _showSuccessDialog(DrainageReport report) {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -148,7 +165,11 @@ class _ReportIssueScreenState extends State<ReportIssueScreen> {
                 const CircleAvatar(
                   radius: 40,
                   backgroundColor: Color(0xFF10B981),
-                  child: Icon(Icons.check_rounded, color: Colors.white, size: 48),
+                  child: Icon(
+                    Icons.check_rounded,
+                    color: Colors.white,
+                    size: 48,
+                  ),
                 ),
                 const SizedBox(height: 24),
                 Text(
@@ -170,14 +191,21 @@ class _ReportIssueScreenState extends State<ReportIssueScreen> {
                 ),
                 const SizedBox(height: 20),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFE2FBE9),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.description_rounded, color: Color(0xFF10B981), size: 28),
+                      const Icon(
+                        Icons.description_rounded,
+                        color: Color(0xFF10B981),
+                        size: 28,
+                      ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(
@@ -191,7 +219,7 @@ class _ReportIssueScreenState extends State<ReportIssueScreen> {
                               ),
                             ),
                             Text(
-                              'DRN-2025-0000123',
+                              report.displayId,
                               style: GoogleFonts.poppins(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 14,
@@ -222,7 +250,9 @@ class _ReportIssueScreenState extends State<ReportIssueScreen> {
                       Navigator.pop(context); // Close Report Screen
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const MyReportsScreen()),
+                        MaterialPageRoute(
+                          builder: (context) => const MyReportsScreen(),
+                        ),
                       );
                     },
                     style: ElevatedButton.styleFrom(
@@ -284,7 +314,11 @@ class _ReportIssueScreenState extends State<ReportIssueScreen> {
                 const CircleAvatar(
                   radius: 40,
                   backgroundColor: Color(0xFFEF4444),
-                  child: Icon(Icons.priority_high_rounded, color: Colors.white, size: 48),
+                  child: Icon(
+                    Icons.priority_high_rounded,
+                    color: Colors.white,
+                    size: 48,
+                  ),
                 ),
                 const SizedBox(height: 24),
                 Text(
@@ -319,17 +353,28 @@ class _ReportIssueScreenState extends State<ReportIssueScreen> {
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('• ', style: TextStyle(fontWeight: FontWeight.bold)),
+                            const Text(
+                              '• ',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
                             Expanded(
                               child: RichText(
                                 text: TextSpan(
-                                  style: GoogleFonts.poppins(color: Colors.black87, fontSize: 13),
+                                  style: GoogleFonts.poppins(
+                                    color: Colors.black87,
+                                    fontSize: 13,
+                                  ),
                                   children: [
                                     TextSpan(
                                       text: 'Location is required.\n',
-                                      style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+                                      style: GoogleFonts.poppins(
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
-                                    const TextSpan(text: 'Please set the exact location of the drainage issue.'),
+                                    const TextSpan(
+                                      text:
+                                          'Please set the exact location of the drainage issue.',
+                                    ),
                                   ],
                                 ),
                               ),
@@ -342,17 +387,28 @@ class _ReportIssueScreenState extends State<ReportIssueScreen> {
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('• ', style: TextStyle(fontWeight: FontWeight.bold)),
+                            const Text(
+                              '• ',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
                             Expanded(
                               child: RichText(
                                 text: TextSpan(
-                                  style: GoogleFonts.poppins(color: Colors.black87, fontSize: 13),
+                                  style: GoogleFonts.poppins(
+                                    color: Colors.black87,
+                                    fontSize: 13,
+                                  ),
                                   children: [
                                     TextSpan(
                                       text: 'Description is required.\n',
-                                      style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+                                      style: GoogleFonts.poppins(
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
-                                    const TextSpan(text: 'Please add description to your current report.'),
+                                    const TextSpan(
+                                      text:
+                                          'Please add description to your current report.',
+                                    ),
                                   ],
                                 ),
                               ),
@@ -365,17 +421,28 @@ class _ReportIssueScreenState extends State<ReportIssueScreen> {
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('• ', style: TextStyle(fontWeight: FontWeight.bold)),
+                            const Text(
+                              '• ',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
                             Expanded(
                               child: RichText(
                                 text: TextSpan(
-                                  style: GoogleFonts.poppins(color: Colors.black87, fontSize: 13),
+                                  style: GoogleFonts.poppins(
+                                    color: Colors.black87,
+                                    fontSize: 13,
+                                  ),
                                   children: [
                                     TextSpan(
                                       text: 'Photo is required.\n',
-                                      style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+                                      style: GoogleFonts.poppins(
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
-                                    const TextSpan(text: 'Please add a photo to your current report.'),
+                                    const TextSpan(
+                                      text:
+                                          'Please add a photo to your current report.',
+                                    ),
                                   ],
                                 ),
                               ),
@@ -434,8 +501,10 @@ class _ReportIssueScreenState extends State<ReportIssueScreen> {
     );
   }
 
-  void _handleSubmit() {
-    if (_selectedImage == null || _descriptionController.text.trim().isEmpty || _selectedLocation == null) {
+  Future<void> _handleSubmit() async {
+    if (_selectedImage == null ||
+        _descriptionController.text.trim().isEmpty ||
+        _selectedLocation == null) {
       _showFailureDialog();
       return;
     }
@@ -444,21 +513,34 @@ class _ReportIssueScreenState extends State<ReportIssueScreen> {
       _isSubmitting = true;
     });
 
-    // Simulate submission
-    Future.delayed(const Duration(milliseconds: 2000), () {
+    try {
+      final report = await SupabaseService.submitReport(
+        photo: _selectedImage!,
+        location: _selectedLocation!,
+        description: _descriptionController.text.trim(),
+      );
+      if (!mounted) return;
+      _showSuccessDialog(report);
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(error.toString()),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
       if (mounted) {
         setState(() {
           _isSubmitting = false;
         });
-        _showSuccessDialog();
       }
-    });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Scaffold(
       backgroundColor: const Color(0xFF38B6FF), // Blue top background
       body: SafeArea(
@@ -467,7 +549,10 @@ class _ReportIssueScreenState extends State<ReportIssueScreen> {
           children: [
             // Top Header
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24.0,
+                vertical: 16.0,
+              ),
               child: Row(
                 children: [
                   // Back Button (Black circle with white arrow)
@@ -553,19 +638,34 @@ class _ReportIssueScreenState extends State<ReportIssueScreen> {
                                         right: 12,
                                         bottom: 12,
                                         child: Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 12,
+                                            vertical: 6,
+                                          ),
                                           decoration: BoxDecoration(
-                                            color: Colors.black.withOpacity(0.6),
-                                            borderRadius: BorderRadius.circular(20),
+                                            color: Colors.black.withValues(
+                                              alpha: 0.6,
+                                            ),
+                                            borderRadius: BorderRadius.circular(
+                                              20,
+                                            ),
                                           ),
                                           child: Row(
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
-                                              const Icon(Icons.refresh_rounded, color: Colors.white, size: 16),
+                                              const Icon(
+                                                Icons.refresh_rounded,
+                                                color: Colors.white,
+                                                size: 16,
+                                              ),
                                               const SizedBox(width: 4),
                                               Text(
                                                 'Change Photo',
-                                                style: GoogleFonts.poppins(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                                                style: GoogleFonts.poppins(
+                                                  color: Colors.white,
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
                                               ),
                                             ],
                                           ),
@@ -574,9 +674,12 @@ class _ReportIssueScreenState extends State<ReportIssueScreen> {
                                     ],
                                   )
                                 : CustomPaint(
-                                    painter: DashedBorderPainter(color: Colors.black38),
+                                    painter: DashedBorderPainter(
+                                      color: Colors.black38,
+                                    ),
                                     child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                       children: [
                                         // Custom camera and click design
                                         Stack(
@@ -594,9 +697,16 @@ class _ReportIssueScreenState extends State<ReportIssueScreen> {
                                                 width: 32,
                                                 height: 32,
                                                 decoration: BoxDecoration(
-                                                  color: const Color(0x3338B6FF),
+                                                  color: const Color(
+                                                    0x3338B6FF,
+                                                  ),
                                                   shape: BoxShape.circle,
-                                                  border: Border.all(color: const Color(0xFF38B6FF), width: 1.5),
+                                                  border: Border.all(
+                                                    color: const Color(
+                                                      0xFF38B6FF,
+                                                    ),
+                                                    width: 1.5,
+                                                  ),
                                                 ),
                                                 child: const Icon(
                                                   Icons.touch_app_rounded,
@@ -639,7 +749,9 @@ class _ReportIssueScreenState extends State<ReportIssueScreen> {
                         onTap: () async {
                           final result = await Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => const MapScreen()),
+                            MaterialPageRoute(
+                              builder: (context) => const MapScreen(),
+                            ),
                           );
                           if (result != null && mounted) {
                             setState(() {
@@ -648,13 +760,16 @@ class _ReportIssueScreenState extends State<ReportIssueScreen> {
                           }
                         },
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 14,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(16),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.04),
+                                color: Colors.black.withValues(alpha: 0.04),
                                 blurRadius: 10,
                                 offset: const Offset(0, 4),
                               ),
@@ -700,13 +815,16 @@ class _ReportIssueScreenState extends State<ReportIssueScreen> {
                       ),
                       const SizedBox(height: 12),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(16),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.04),
+                              color: Colors.black.withValues(alpha: 0.04),
                               blurRadius: 10,
                               offset: const Offset(0, 4),
                             ),
@@ -721,15 +839,26 @@ class _ReportIssueScreenState extends State<ReportIssueScreen> {
                               maxLength: 500,
                               decoration: InputDecoration(
                                 hintText: 'Type your description here...',
-                                hintStyle: const TextStyle(color: Colors.black38, fontSize: 13),
+                                hintStyle: const TextStyle(
+                                  color: Colors.black38,
+                                  fontSize: 13,
+                                ),
                                 prefixIcon: const Padding(
                                   padding: EdgeInsets.only(bottom: 50.0),
-                                  child: Icon(Icons.edit_outlined, color: Colors.black38, size: 20),
+                                  child: Icon(
+                                    Icons.edit_outlined,
+                                    color: Colors.black38,
+                                    size: 20,
+                                  ),
                                 ),
                                 border: InputBorder.none,
-                                counterText: '', // Hide default counter text to use custom label
+                                counterText:
+                                    '', // Hide default counter text to use custom label
                               ),
-                              style: GoogleFonts.poppins(fontSize: 13, color: Colors.black87),
+                              style: GoogleFonts.poppins(
+                                fontSize: 13,
+                                color: Colors.black87,
+                              ),
                             ),
                             Align(
                               alignment: Alignment.bottomRight,
@@ -814,10 +943,12 @@ class DashedBorderPainter extends CustomPainter {
       ..style = PaintingStyle.stroke;
 
     final path = Path();
-    path.addRRect(RRect.fromRectAndRadius(
-      Rect.fromLTWH(0, 0, size.width, size.height),
-      const Radius.circular(16),
-    ));
+    path.addRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(0, 0, size.width, size.height),
+        const Radius.circular(16),
+      ),
+    );
 
     // Dash algorithm
     final Path dashPath = Path();

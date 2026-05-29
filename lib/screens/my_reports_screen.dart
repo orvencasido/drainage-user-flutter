@@ -1,19 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class ReportItem {
-  final String title;
-  final String location;
-  final String dateTime;
-  final String status; // 'In Progress', 'Resolved', 'Rejected'
-
-  ReportItem({
-    required this.title,
-    required this.location,
-    required this.dateTime,
-    required this.status,
-  });
-}
+import '../models/drainage_report.dart';
+import '../services/supabase_service.dart';
 
 class MyReportsScreen extends StatefulWidget {
   const MyReportsScreen({super.key});
@@ -24,58 +13,36 @@ class MyReportsScreen extends StatefulWidget {
 
 class _MyReportsScreenState extends State<MyReportsScreen> {
   String _selectedTab = 'All';
+  late Future<List<DrainageReport>> _reportsFuture;
 
-  final List<ReportItem> _reports = [
-    ReportItem(
-      title: 'Clogged Drain',
-      location: 'Purok 2',
-      dateTime: 'May 20, 2026  •  10:30 AM',
-      status: 'In Progress',
-    ),
-    ReportItem(
-      title: 'Flooded Street',
-      location: 'Purok 1',
-      dateTime: 'May 20, 2026  •  10:30 AM',
-      status: 'Resolved',
-    ),
-    ReportItem(
-      title: 'Broken Drain Cover',
-      location: 'Purok 3',
-      dateTime: 'May 20, 2026  •  10:30 AM',
-      status: 'In Progress',
-    ),
-    ReportItem(
-      title: 'Waste on Canal',
-      location: 'Purok 4',
-      dateTime: 'May 20, 2026  •  10:30 AM',
-      status: 'Rejected',
-    ),
-    ReportItem(
-      title: 'Clogged Drain',
-      location: 'Purok 5',
-      dateTime: 'May 20, 2026  •  10:30 AM',
-      status: 'In Progress',
-    ),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _reportsFuture = SupabaseService.fetchMyReports();
+  }
+
+  Future<void> _refreshReports() async {
+    setState(() {
+      _reportsFuture = SupabaseService.fetchMyReports();
+    });
+    await _reportsFuture;
+  }
 
   @override
   Widget build(BuildContext context) {
-    final filteredReports = _selectedTab == 'All'
-        ? _reports
-        : _reports.where((r) => r.status == _selectedTab).toList();
-
     return Scaffold(
-      backgroundColor: const Color(0xFF38B6FF), // Blue top background
+      backgroundColor: const Color(0xFF38B6FF),
       body: SafeArea(
         bottom: false,
         child: Column(
           children: [
-            // Top Header
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24.0,
+                vertical: 16.0,
+              ),
               child: Row(
                 children: [
-                  // Back Button (Black circle with white arrow)
                   GestureDetector(
                     onTap: () => Navigator.pop(context),
                     child: Container(
@@ -104,13 +71,11 @@ class _MyReportsScreenState extends State<MyReportsScreen> {
                 ],
               ),
             ),
-
-            // White Content Body
             Expanded(
               child: Container(
                 width: double.infinity,
                 decoration: const BoxDecoration(
-                  color: Color(0xFFF3F7FA), // Soft light background
+                  color: Color(0xFFF3F7FA),
                   borderRadius: BorderRadius.only(
                     topLeft: Radius.circular(32),
                     topRight: Radius.circular(32),
@@ -118,35 +83,68 @@ class _MyReportsScreenState extends State<MyReportsScreen> {
                 ),
                 child: Column(
                   children: [
-                    // Tabs/Filters Row
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(16.0, 20.0, 16.0, 10.0),
+                      padding: const EdgeInsets.fromLTRB(
+                        16.0,
+                        20.0,
+                        16.0,
+                        10.0,
+                      ),
                       child: SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         physics: const BouncingScrollPhysics(),
                         child: Row(
-                          children: ['All', 'In Progress', 'Resolved', 'Rejected']
-                              .map((tab) => _buildTabItem(tab))
-                              .toList(),
+                          children: [
+                            'All',
+                            'In Progress',
+                            'Resolved',
+                            'Rejected',
+                          ].map((tab) => _buildTabItem(tab)).toList(),
                         ),
                       ),
                     ),
                     const Divider(height: 1, color: Colors.black12),
-
-                    // Reports List
                     Expanded(
-                      child: filteredReports.isEmpty
-                          ? Center(
-                              child: Text(
-                                'No reports found for this filter.',
-                                style: GoogleFonts.poppins(
-                                  color: Colors.black54,
-                                  fontSize: 14,
-                                ),
+                      child: FutureBuilder<List<DrainageReport>>(
+                        future: _reportsFuture,
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return const Center(
+                              child: CircularProgressIndicator(
+                                color: Color(0xFF38B6FF),
                               ),
-                            )
-                          : ListView.builder(
-                              physics: const BouncingScrollPhysics(),
+                            );
+                          }
+
+                          if (snapshot.hasError) {
+                            return _buildMessage(
+                              'Unable to load reports.\n${snapshot.error}',
+                              showRefresh: true,
+                            );
+                          }
+
+                          final reports = snapshot.data ?? [];
+                          final filteredReports = _selectedTab == 'All'
+                              ? reports
+                              : reports
+                                    .where(
+                                      (report) => report.status == _selectedTab,
+                                    )
+                                    .toList();
+
+                          if (filteredReports.isEmpty) {
+                            return _buildMessage(
+                              'No reports found for this filter.',
+                              showRefresh: true,
+                            );
+                          }
+
+                          return RefreshIndicator(
+                            onRefresh: _refreshReports,
+                            color: const Color(0xFF38B6FF),
+                            child: ListView.builder(
+                              physics: const AlwaysScrollableScrollPhysics(),
                               padding: const EdgeInsets.all(20.0),
                               itemCount: filteredReports.length,
                               itemBuilder: (context, index) {
@@ -154,11 +152,40 @@ class _MyReportsScreenState extends State<MyReportsScreen> {
                                 return _buildReportCard(report);
                               },
                             ),
+                          );
+                        },
+                      ),
                     ),
                   ],
                 ),
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMessage(String message, {bool showRefresh = false}) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(color: Colors.black54, fontSize: 14),
+            ),
+            if (showRefresh) ...[
+              const SizedBox(height: 12),
+              TextButton.icon(
+                onPressed: _refreshReports,
+                icon: const Icon(Icons.refresh_rounded),
+                label: const Text('Refresh'),
+              ),
+            ],
           ],
         ),
       ),
@@ -178,7 +205,10 @@ class _MyReportsScreenState extends State<MyReportsScreen> {
         children: [
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 8.0),
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16.0,
+              vertical: 8.0,
+            ),
             decoration: BoxDecoration(
               color: isSelected ? const Color(0xFF0066FF) : Colors.transparent,
               borderRadius: BorderRadius.circular(20),
@@ -193,7 +223,6 @@ class _MyReportsScreenState extends State<MyReportsScreen> {
             ),
           ),
           const SizedBox(height: 6),
-          // Underline bar for selected tab
           Container(
             height: 3,
             width: 40,
@@ -207,7 +236,7 @@ class _MyReportsScreenState extends State<MyReportsScreen> {
     );
   }
 
-  Widget _buildReportCard(ReportItem report) {
+  Widget _buildReportCard(DrainageReport report) {
     Color badgeBgColor;
     Color badgeTextColor;
 
@@ -235,7 +264,7 @@ class _MyReportsScreenState extends State<MyReportsScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -243,33 +272,26 @@ class _MyReportsScreenState extends State<MyReportsScreen> {
       ),
       child: Row(
         children: [
-          // Image reused as requested
           ClipRRect(
             borderRadius: BorderRadius.circular(12),
-            child: Image.asset(
-              'assets/clogged_drain.png',
-              width: 70,
-              height: 70,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  width: 70,
-                  height: 70,
-                  color: Colors.grey[300],
-                  child: const Icon(Icons.broken_image_outlined, color: Colors.grey),
-                );
-              },
-            ),
+            child: report.imageUrl.isEmpty
+                ? _buildImageFallback()
+                : Image.network(
+                    report.imageUrl,
+                    width: 70,
+                    height: 70,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) =>
+                        _buildImageFallback(),
+                  ),
           ),
           const SizedBox(width: 14),
-
-          // Details
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  report.title,
+                  report.issue,
                   style: GoogleFonts.poppins(
                     fontWeight: FontWeight.bold,
                     fontSize: 15,
@@ -286,16 +308,18 @@ class _MyReportsScreenState extends State<MyReportsScreen> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  report.dateTime,
+                  report.formattedDate,
                   style: GoogleFonts.poppins(
                     color: Colors.black38,
                     fontSize: 11,
                   ),
                 ),
                 const SizedBox(height: 6),
-                // Status badge
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
                     color: badgeBgColor,
                     borderRadius: BorderRadius.circular(20),
@@ -319,6 +343,23 @@ class _MyReportsScreenState extends State<MyReportsScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildImageFallback() {
+    return Image.asset(
+      'assets/clogged_drain.png',
+      width: 70,
+      height: 70,
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) {
+        return Container(
+          width: 70,
+          height: 70,
+          color: Colors.grey[300],
+          child: const Icon(Icons.broken_image_outlined, color: Colors.grey),
+        );
+      },
     );
   }
 }

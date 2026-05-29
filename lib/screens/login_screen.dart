@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../services/supabase_service.dart';
 import 'register_screen.dart';
 import 'home_screen.dart';
 
@@ -14,7 +15,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
-  
+
   bool _obscurePassword = true;
   bool _isLoading = false;
 
@@ -25,24 +26,38 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  void _handleLogin() {
+  Future<void> _handleLogin() async {
     if (_formKey.currentState!.validate()) {
       setState(() {
         _isLoading = true;
       });
-      
-      // Simulate login action
-      Future.delayed(const Duration(milliseconds: 1500), () {
+
+      try {
+        await SupabaseService.signIn(
+          email: _usernameController.text.trim(),
+          password: _passwordController.text,
+        );
+        if (!mounted) return;
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+        );
+      } catch (error) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(error.toString()),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      } finally {
         if (mounted) {
           setState(() {
             _isLoading = false;
           });
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const HomeScreen()),
-          );
         }
-      });
+      }
     }
   }
 
@@ -93,11 +108,14 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
               ),
-              
+
               // Bottom Input Form
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 24.0),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 32.0,
+                    vertical: 24.0,
+                  ),
                   child: Form(
                     key: _formKey,
                     child: Column(
@@ -110,28 +128,44 @@ class _LoginScreenState extends State<LoginScreen> {
                             // Username field
                             TextFormField(
                               controller: _usernameController,
-                              keyboardType: TextInputType.text,
+                              keyboardType: TextInputType.emailAddress,
                               decoration: InputDecoration(
-                                hintText: 'Username',
-                                hintStyle: const TextStyle(color: Colors.black38),
-                                prefixIcon: const Icon(Icons.person_outline_rounded, color: Colors.black38),
+                                hintText: 'Email',
+                                hintStyle: const TextStyle(
+                                  color: Colors.black38,
+                                ),
+                                prefixIcon: const Icon(
+                                  Icons.person_outline_rounded,
+                                  color: Colors.black38,
+                                ),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(color: Color(0xFFCCCCCC), width: 1.5),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFFCCCCCC),
+                                    width: 1.5,
+                                  ),
                                 ),
                                 enabledBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(color: Color(0xFFCCCCCC), width: 1.5),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFFCCCCCC),
+                                    width: 1.5,
+                                  ),
                                 ),
                                 focusedBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(color: Color(0xFF38B6FF), width: 1.5),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFF38B6FF),
+                                    width: 1.5,
+                                  ),
                                 ),
-                                contentPadding: const EdgeInsets.symmetric(vertical: 16.0),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  vertical: 16.0,
+                                ),
                               ),
                               validator: (value) {
                                 if (value == null || value.trim().isEmpty) {
-                                  return 'Please enter your username';
+                                  return 'Please enter your email';
                                 }
                                 return null;
                               },
@@ -143,8 +177,13 @@ class _LoginScreenState extends State<LoginScreen> {
                               obscureText: _obscurePassword,
                               decoration: InputDecoration(
                                 hintText: 'Password',
-                                hintStyle: const TextStyle(color: Colors.black38),
-                                prefixIcon: const Icon(Icons.lock_outline_rounded, color: Colors.black38),
+                                hintStyle: const TextStyle(
+                                  color: Colors.black38,
+                                ),
+                                prefixIcon: const Icon(
+                                  Icons.lock_outline_rounded,
+                                  color: Colors.black38,
+                                ),
                                 suffixIcon: GestureDetector(
                                   onTap: () {
                                     setState(() {
@@ -160,17 +199,28 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(color: Color(0xFFCCCCCC), width: 1.5),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFFCCCCCC),
+                                    width: 1.5,
+                                  ),
                                 ),
                                 enabledBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(color: Color(0xFFCCCCCC), width: 1.5),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFFCCCCCC),
+                                    width: 1.5,
+                                  ),
                                 ),
                                 focusedBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(color: Color(0xFF38B6FF), width: 1.5),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFF38B6FF),
+                                    width: 1.5,
+                                  ),
                                 ),
-                                contentPadding: const EdgeInsets.symmetric(vertical: 16.0),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  vertical: 16.0,
+                                ),
                               ),
                               validator: (value) {
                                 if (value == null || value.trim().isEmpty) {
@@ -193,7 +243,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                 foregroundColor: Colors.white,
                                 elevation: 0,
                                 shadowColor: Colors.transparent,
-                                padding: const EdgeInsets.symmetric(vertical: 16.0),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16.0,
+                                ),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
@@ -232,7 +284,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                   onTap: () {
                                     Navigator.push(
                                       context,
-                                      MaterialPageRoute(builder: (context) => const RegisterScreen()),
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            const RegisterScreen(),
+                                      ),
                                     );
                                   },
                                   child: Text(

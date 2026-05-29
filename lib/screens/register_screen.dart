@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../services/supabase_service.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -17,7 +18,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _confirmPasswordController = TextEditingController();
 
   bool _isLoading = false;
-  bool _obscurePassword = true;
+  final bool _obscurePassword = true;
 
   @override
   void dispose() {
@@ -29,27 +30,46 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.dispose();
   }
 
-  void _handleRegister() {
+  Future<void> _handleRegister() async {
     if (_formKey.currentState!.validate()) {
       setState(() {
         _isLoading = true;
       });
 
-      Future.delayed(const Duration(milliseconds: 1500), () {
+      try {
+        await SupabaseService.signUp(
+          name: _nameController.text.trim(),
+          contactNo: _contactController.text.trim(),
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
+        );
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Account created successfully! Please login to continue.',
+            ),
+            backgroundColor: Color(0xFF38B6FF),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        Navigator.pop(context);
+      } catch (error) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(error.toString()),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      } finally {
         if (mounted) {
           setState(() {
             _isLoading = false;
           });
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Account created successfully!'),
-              backgroundColor: Color(0xFF38B6FF),
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
-          Navigator.pop(context);
         }
-      });
+      }
     }
   }
 
@@ -62,7 +82,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 24.0,
+              vertical: 16.0,
+            ),
             child: Form(
               key: _formKey,
               child: Column(
@@ -86,7 +109,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  
+
                   // Header text centered
                   Center(
                     child: Column(
@@ -122,22 +145,36 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         decoration: InputDecoration(
                           hintText: 'Full Name',
                           hintStyle: const TextStyle(color: Colors.black38),
-                          prefixIcon: const Icon(Icons.person_outline_rounded, color: Colors.black38),
+                          prefixIcon: const Icon(
+                            Icons.person_outline_rounded,
+                            color: Colors.black38,
+                          ),
                           fillColor: const Color(0xFFF7F7F7),
                           filled: true,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: Color(0xFFCCCCCC), width: 1.5),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFCCCCCC),
+                              width: 1.5,
+                            ),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: Color(0xFFCCCCCC), width: 1.5),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFCCCCCC),
+                              width: 1.5,
+                            ),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: Color(0xFF38B6FF), width: 1.5),
+                            borderSide: const BorderSide(
+                              color: Color(0xFF38B6FF),
+                              width: 1.5,
+                            ),
                           ),
-                          contentPadding: const EdgeInsets.symmetric(vertical: 16.0),
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 16.0,
+                          ),
                         ),
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
@@ -155,22 +192,36 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         decoration: InputDecoration(
                           hintText: 'Contact Number',
                           hintStyle: const TextStyle(color: Colors.black38),
-                          prefixIcon: const Icon(Icons.phone_outlined, color: Colors.black38),
+                          prefixIcon: const Icon(
+                            Icons.phone_outlined,
+                            color: Colors.black38,
+                          ),
                           fillColor: const Color(0xFFF7F7F7),
                           filled: true,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: Color(0xFFCCCCCC), width: 1.5),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFCCCCCC),
+                              width: 1.5,
+                            ),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: Color(0xFFCCCCCC), width: 1.5),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFCCCCCC),
+                              width: 1.5,
+                            ),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: Color(0xFF38B6FF), width: 1.5),
+                            borderSide: const BorderSide(
+                              color: Color(0xFF38B6FF),
+                              width: 1.5,
+                            ),
                           ),
-                          contentPadding: const EdgeInsets.symmetric(vertical: 16.0),
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 16.0,
+                          ),
                         ),
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
@@ -188,28 +239,44 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         decoration: InputDecoration(
                           hintText: 'Email',
                           hintStyle: const TextStyle(color: Colors.black38),
-                          prefixIcon: const Icon(Icons.email_outlined, color: Colors.black38),
+                          prefixIcon: const Icon(
+                            Icons.email_outlined,
+                            color: Colors.black38,
+                          ),
                           fillColor: const Color(0xFFF7F7F7),
                           filled: true,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: Color(0xFFCCCCCC), width: 1.5),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFCCCCCC),
+                              width: 1.5,
+                            ),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: Color(0xFFCCCCCC), width: 1.5),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFCCCCCC),
+                              width: 1.5,
+                            ),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: Color(0xFF38B6FF), width: 1.5),
+                            borderSide: const BorderSide(
+                              color: Color(0xFF38B6FF),
+                              width: 1.5,
+                            ),
                           ),
-                          contentPadding: const EdgeInsets.symmetric(vertical: 16.0),
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 16.0,
+                          ),
                         ),
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
                             return 'Please enter your email';
                           }
-                          if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                          if (!RegExp(
+                            r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                          ).hasMatch(value)) {
                             return 'Please enter a valid email address';
                           }
                           return null;
@@ -224,22 +291,36 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         decoration: InputDecoration(
                           hintText: 'Password',
                           hintStyle: const TextStyle(color: Colors.black38),
-                          prefixIcon: const Icon(Icons.lock_outline_rounded, color: Colors.black38),
+                          prefixIcon: const Icon(
+                            Icons.lock_outline_rounded,
+                            color: Colors.black38,
+                          ),
                           fillColor: const Color(0xFFF7F7F7),
                           filled: true,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: Color(0xFFCCCCCC), width: 1.5),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFCCCCCC),
+                              width: 1.5,
+                            ),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: Color(0xFFCCCCCC), width: 1.5),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFCCCCCC),
+                              width: 1.5,
+                            ),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: Color(0xFF38B6FF), width: 1.5),
+                            borderSide: const BorderSide(
+                              color: Color(0xFF38B6FF),
+                              width: 1.5,
+                            ),
                           ),
-                          contentPadding: const EdgeInsets.symmetric(vertical: 16.0),
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 16.0,
+                          ),
                         ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
@@ -264,17 +345,29 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           filled: true,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: Color(0xFFCCCCCC), width: 1.5),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFCCCCCC),
+                              width: 1.5,
+                            ),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: Color(0xFFCCCCCC), width: 1.5),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFCCCCCC),
+                              width: 1.5,
+                            ),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: Color(0xFF38B6FF), width: 1.5),
+                            borderSide: const BorderSide(
+                              color: Color(0xFF38B6FF),
+                              width: 1.5,
+                            ),
                           ),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16.0,
+                            vertical: 16.0,
+                          ),
                         ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
