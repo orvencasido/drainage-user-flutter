@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'my_reports_screen.dart';
+import 'map_screen.dart';
 
 class ReportIssueScreen extends StatefulWidget {
   const ReportIssueScreen({super.key});
@@ -17,6 +18,7 @@ class _ReportIssueScreenState extends State<ReportIssueScreen> {
   final _picker = ImagePicker();
   int _charCount = 0;
   bool _isSubmitting = false;
+  String? _selectedLocation;
 
   @override
   void initState() {
@@ -313,6 +315,29 @@ class _ReportIssueScreenState extends State<ReportIssueScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      if (_selectedLocation == null) ...[
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('• ', style: TextStyle(fontWeight: FontWeight.bold)),
+                            Expanded(
+                              child: RichText(
+                                text: TextSpan(
+                                  style: GoogleFonts.poppins(color: Colors.black87, fontSize: 13),
+                                  children: [
+                                    TextSpan(
+                                      text: 'Location is required.\n',
+                                      style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+                                    ),
+                                    const TextSpan(text: 'Please set the exact location of the drainage issue.'),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                      ],
                       if (_descriptionController.text.trim().isEmpty) ...[
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -410,7 +435,7 @@ class _ReportIssueScreenState extends State<ReportIssueScreen> {
   }
 
   void _handleSubmit() {
-    if (_selectedImage == null || _descriptionController.text.trim().isEmpty) {
+    if (_selectedImage == null || _descriptionController.text.trim().isEmpty || _selectedLocation == null) {
       _showFailureDialog();
       return;
     }
@@ -610,43 +635,56 @@ class _ReportIssueScreenState extends State<ReportIssueScreen> {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.04),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(
-                              Icons.location_on_rounded,
-                              color: Color(0xFFEF4444),
-                              size: 26,
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                'Tap to set location',
-                                style: GoogleFonts.poppins(
-                                  color: Colors.black87,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
+                      GestureDetector(
+                        onTap: () async {
+                          final result = await Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const MapScreen()),
+                          );
+                          if (result != null && mounted) {
+                            setState(() {
+                              _selectedLocation = result;
+                            });
+                          }
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.04),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.location_on_rounded,
+                                color: Color(0xFFEF4444),
+                                size: 26,
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  _selectedLocation ?? 'Tap to set location',
+                                  style: GoogleFonts.poppins(
+                                    color: Colors.black87,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                  ),
                                 ),
                               ),
-                            ),
-                            const Icon(
-                              Icons.chevron_right_rounded,
-                              color: Colors.black54,
-                              size: 26,
-                            ),
-                          ],
+                              const Icon(
+                                Icons.chevron_right_rounded,
+                                color: Colors.black54,
+                                size: 26,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                       const SizedBox(height: 24),
