@@ -115,34 +115,13 @@ class NotificationsScreen extends StatelessWidget {
                           20.0,
                           24.0,
                           20.0,
-                          10.0,
+                          24.0,
                         ),
                         itemCount: notifications.length,
                         itemBuilder: (context, index) {
                           final item = notifications[index];
                           return _buildNotificationCard(item);
                         },
-                      ),
-                    ),
-                    // View all notifications button/link
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 24.0),
-                      child: TextButton(
-                        onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Viewing all notifications'),
-                            ),
-                          );
-                        },
-                        child: Text(
-                          'View all notifications',
-                          style: GoogleFonts.poppins(
-                            color: const Color(0xFF0066FF),
-                            fontWeight: FontWeight.bold,
-                            fontSize: 15,
-                          ),
-                        ),
                       ),
                     ),
                   ],
