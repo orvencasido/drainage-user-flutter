@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../models/drainage_report.dart';
 import '../services/supabase_service.dart';
+import 'account_screen.dart';
 import 'login_screen.dart';
 import 'my_reports_screen.dart';
 import 'notifications_screen.dart';
@@ -28,18 +29,28 @@ class HomeScreen extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  // Profile Avatar
-                  Container(
-                    width: 56,
-                    height: 56,
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.person_rounded,
-                      size: 36,
-                      color: Colors.black,
+                  // Profile Avatar (tap to open Account page)
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const AccountScreen(),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      width: 56,
+                      height: 56,
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.person_rounded,
+                        size: 36,
+                        color: Colors.black,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 16),

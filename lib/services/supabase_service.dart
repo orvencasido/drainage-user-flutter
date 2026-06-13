@@ -57,6 +57,58 @@ class SupabaseService {
     return client.auth.signOut();
   }
 
+  /// Updates the resident's display name, phone, and optionally email.
+  static Future<void> updateProfile({
+    required String name,
+    required String phone,
+    required String email,
+  }) async {
+    final currentEmail = currentUser?.email ?? '';
+
+    final response = await client.auth.updateUser(UserAttributes(
+      email: (email.isNotEmpty && email != currentEmail) ? email : null,
+      data: {'name': name, 'contact_no': phone},
+    ));
+
+    if (response.user == null) {
+      throw Exception('Failed to update profile. Please try again.');
+    }
+
+    // Keep the residents table in sync (best-effort)
+    try {
+      final uid = currentUser?.id;
+      if (uid != null) {
+        await client.from('residents').update({
+          'name': name,
+          'contact': phone,
+        }).eq('id', uid);
+      }
+    } catch (_) {}
+  }
+
+  /// Re-authenticates with [currentPassword] then updates to [newPassword].
+  static Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    final email = currentUser?.email;
+    if (email == null) throw Exception('No authenticated user.');
+
+    // Re-authenticate to verify current password
+    final signInRes =
+        await client.auth.signInWithPassword(email: email, password: currentPassword);
+    if (signInRes.user == null) {
+      throw Exception('Current password is incorrect.');
+    }
+
+    // Update to new password
+    final updateRes =
+        await client.auth.updateUser(UserAttributes(password: newPassword));
+    if (updateRes.user == null) {
+      throw Exception('Failed to change password. Please try again.');
+    }
+  }
+
   static Future<String> uploadReportPhoto(File file) async {
     final extension = file.path.split('.').last.toLowerCase();
     final safeExtension = extension.isEmpty ? 'jpg' : extension;
