@@ -81,3 +81,5 @@ Desktop.ini
 /ios/Runner/GoogleService-Info.plist
 /ios/Pods/
 /ios/.bundle/
+
+/lib/config/supabase_config.dart
