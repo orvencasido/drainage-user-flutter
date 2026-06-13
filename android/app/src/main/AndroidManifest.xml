@@ -2,7 +2,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
-        android:label="toda_go"
+        android:label="Drainage Reporting"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

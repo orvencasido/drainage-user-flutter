@@ -88,6 +88,13 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
+                      // Logo
+                      Image.asset(
+                        'assets/drainage.png',
+                        height: 130,
+                        fit: BoxFit.contain,
+                      ),
+                      const SizedBox(height: 16),
                       Text(
                         'Welcome Back!',
                         style: theme.textTheme.headlineMedium?.copyWith(
