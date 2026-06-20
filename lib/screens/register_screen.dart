@@ -18,7 +18,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _confirmPasswordController = TextEditingController();
 
   bool _isLoading = false;
-  final bool _obscurePassword = true;
+  bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
 
   @override
   void dispose() {
@@ -295,6 +296,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             Icons.lock_outline_rounded,
                             color: Colors.black38,
                           ),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscurePassword
+                                  ? Icons.visibility_outlined
+                                  : Icons.visibility_off_outlined,
+                              color: Colors.black38,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _obscurePassword = !_obscurePassword;
+                              });
+                            },
+                          ),
                           fillColor: const Color(0xFFF7F7F7),
                           filled: true,
                           border: OutlineInputBorder(
@@ -337,10 +351,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       // Confirm Password Field (no icon)
                       TextFormField(
                         controller: _confirmPasswordController,
-                        obscureText: _obscurePassword,
+                        obscureText: _obscureConfirmPassword,
                         decoration: InputDecoration(
                           hintText: 'Confirm Password',
                           hintStyle: const TextStyle(color: Colors.black38),
+                          prefixIcon: const Icon(
+                            Icons.lock_outline_rounded,
+                            color: Colors.black38,
+                          ),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscureConfirmPassword
+                                  ? Icons.visibility_outlined
+                                  : Icons.visibility_off_outlined,
+                              color: Colors.black38,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _obscureConfirmPassword = !_obscureConfirmPassword;
+                              });
+                            },
+                          ),
                           fillColor: const Color(0xFFF7F7F7),
                           filled: true,
                           border: OutlineInputBorder(
@@ -365,7 +396,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             ),
                           ),
                           contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16.0,
                             vertical: 16.0,
                           ),
                         ),
