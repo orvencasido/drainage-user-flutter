@@ -31,7 +31,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Drainage Monitoring System',
+      title: 'Report Drainage',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
